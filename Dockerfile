@@ -4,9 +4,9 @@ FROM alpine:3.20
 RUN apk add --no-cache mariadb-client postgresql16-client redis
 
 # Voeg het backup script en entrypoint toe
-COPY backup.sh /backup.sh
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /backup.sh /entrypoint.sh
+COPY backup.sh /app/backup.sh
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/backup.sh /app/entrypoint.sh
 
 # Start het entrypoint script bij het runnen van de container
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/app/entrypoint.sh"]
