@@ -1,21 +1,36 @@
 version: '3'
 services:
-  frontend:
-    image: frontend-image
-    networks:
-      - frontend-bridge
   backup:
-    image: backup-image
+    image: backend-backup:latest
+    build: .
     environment:
-      - BACKUP_PATH=/path/to/backup
-      - BACKUP_INTERVAL=daily
+      # MariaDB Configuration
+      - MARIADB_HOST=${MARIADB_HOST:-mariadb}
+      - MARIADB_USER=${MARIADB_USER:-root}
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+      
+      # PostgreSQL Configuration
+      - POSTGRES_HOST=${POSTGRES_HOST:-postgresql}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      
+      # Redis Configuration
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      
+      # Backup Settings
+      - BACKUP_DIR=${BACKUP_DIR:-/backups}
+      - RETENTION_DAYS=${RETENTION_DAYS:-7}
+      
+      # Timezone and User Settings
+      - TZ=${TZ:-UTC}
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+    volumes:
+      - ${BACKUP_DIR:-./backups}:/backups
     networks:
-      - frontend-bridge
-    healthcheck:
-      test: ['CMD', 'check-backup-service']
-      interval: 1m30s
-      timeout: 10s
-      retries: 3
+      - backend
+    restart: "no"
+
 networks:
-  frontend-bridge:
-    driver: bridge
+  backend:
+    external: true
