@@ -1,15 +1,11 @@
 FROM alpine:3.18
 
-RUN apk add --no-cache \
-    mysql-client \
-    postgresql-client \
-    redis \
-    bash \
-    curl
+# Installeer benodigde database clients
+RUN apk add --no-cache mariadb-client postgresql16-client redis
 
-WORKDIR /app
-COPY backup.sh /app/backup.sh
+# Voeg het backup script toe
+COPY backup.sh /backup.sh
+RUN chmod +x /backup.sh
 
-RUN chmod +x /app/backup.sh
-
-CMD ["/app/backup.sh"]
+# Start het backup script bij het runnen van de container
+ENTRYPOINT ["/backup.sh"]
