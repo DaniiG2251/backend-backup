@@ -72,10 +72,9 @@ fi
 
 # Cleanup oude backups
 log "Oude backups aan het verwijderen (ouder dan $RETENTION_DAYS dagen)..."
-find "$BACKUP_DIR/mariadb" -type f -mtime +"$RETENTION_DAYS" -delete 2>/dev/null || true
-find "$BACKUP_DIR/postgresql" -type f -mtime +"$RETENTION_DAYS" -delete 2>/dev/null || true
-find "$BACKUP_DIR/redis" -type f -mtime +"$RETENTION_DAYS" -delete 2>/dev/null || true
-find "$BACKUP_DIR/log" -type f -mtime +"$RETENTION_DAYS" -delete 2>/dev/null || true
+for subdir in mariadb postgresql redis log; do
+    find "$BACKUP_DIR/$subdir" -type f -mtime +"$RETENTION_DAYS" -delete 2>/dev/null || true
+done
 
 log "=== Backup compleet ==="
 log "Bestanden in backup map:"
