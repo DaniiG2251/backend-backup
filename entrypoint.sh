@@ -19,7 +19,8 @@ while true; do
     if /backup.sh; then
         echo "[$(date +'%Y-%m-%d %H:%M:%S')] Backup succesvol voltooid. Volgende backup over ${BACKUP_INTERVAL_MINUTES} minuten..."
     else
-        echo "[$(date +'%Y-%m-%d %H:%M:%S')] ✗ Backup gefaald (exit code: $?). Volgende poging over ${BACKUP_INTERVAL_MINUTES} minuten..."
+        exit_code=$?
+        echo "[$(date +'%Y-%m-%d %H:%M:%S')] ✗ Backup gefaald (exit code: $exit_code). Volgende poging over ${BACKUP_INTERVAL_MINUTES} minuten..."
     fi
     
     sleep "$SLEEP_SECONDS"
