@@ -1,15 +1,14 @@
 FROM alpine:3.18
 
 RUN apk add --no-cache \
-    mysql-client \
+    mariadb-client \
     postgresql-client \
     redis \
     bash \
     curl
 
-WORKDIR /app
-COPY backup.sh /app/backup.sh
+COPY backup.sh /backup.sh
 
-RUN chmod +x /app/backup.sh
+RUN chmod +x /backup.sh
 
-CMD ["/app/backup.sh"]
+CMD ["/backup.sh"]

@@ -15,6 +15,14 @@ log() {
 }
 
 log "=== Backup gestart ==="
+log "Debug: Ontvangen environment variables:"
+log "  MARIADB_HOST=${MARIADB_HOST:-<niet ingesteld>}"
+log "  MARIADB_USER=${MARIADB_USER:-<niet ingesteld>}"
+log "  POSTGRES_HOST=${POSTGRES_HOST:-<niet ingesteld>}"
+log "  POSTGRES_USER=${POSTGRES_USER:-<niet ingesteld>}"
+log "  REDIS_HOST=${REDIS_HOST:-<niet ingesteld>}"
+log "  BACKUP_DIR=$BACKUP_DIR"
+log "  RETENTION_DAYS=$RETENTION_DAYS"
 
 # MariaDB backup
 if [ -n "${MARIADB_HOST:-}" ]; then
