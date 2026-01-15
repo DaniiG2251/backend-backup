@@ -16,7 +16,7 @@ while true; do
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] Backup wordt uitgevoerd..."
     
     # Execute the backup script with error handling
-    if /backup.sh; then
+    if /app/backup.sh; then
         echo "[$(date +'%Y-%m-%d %H:%M:%S')] Backup succesvol voltooid. Volgende backup over ${BACKUP_INTERVAL_MINUTES} minuten..."
     else
         exit_code=$?
