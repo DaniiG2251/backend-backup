@@ -4,13 +4,14 @@ set -euo pipefail
 
 BACKUP_DIR=${BACKUP_DIR:-/backups}
 RETENTION_DAYS=${RETENTION_DAYS:-7}
+BACKUP_SUBDIRS="mariadb postgresql redis log"
+
 mkdir -p "$BACKUP_DIR"
 
 # Create dedicated subdirectories
-mkdir -p "$BACKUP_DIR/mariadb"
-mkdir -p "$BACKUP_DIR/postgresql"
-mkdir -p "$BACKUP_DIR/redis"
-mkdir -p "$BACKUP_DIR/log"
+for subdir in $BACKUP_SUBDIRS; do
+    mkdir -p "$BACKUP_DIR/$subdir"
+done
 
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
 LOG_FILE="$BACKUP_DIR/log/backup_$TIMESTAMP.log"
@@ -72,13 +73,13 @@ fi
 
 # Cleanup oude backups
 log "Oude backups aan het verwijderen (ouder dan $RETENTION_DAYS dagen)..."
-for subdir in mariadb postgresql redis log; do
+for subdir in $BACKUP_SUBDIRS; do
     find "$BACKUP_DIR/$subdir" -type f -mtime +"$RETENTION_DAYS" -delete 2>/dev/null || true
 done
 
 log "=== Backup compleet ==="
 log "Backup bestanden:"
-for subdir in mariadb postgresql redis log; do
+for subdir in $BACKUP_SUBDIRS; do
     if [ -d "$BACKUP_DIR/$subdir" ] && [ "$(ls -A "$BACKUP_DIR/$subdir" 2>/dev/null)" ]; then
         echo "  $subdir/:" >> "$LOG_FILE"
         ls -lh "$BACKUP_DIR/$subdir" | tail -n +2 | sed 's/^/    /' >> "$LOG_FILE"
