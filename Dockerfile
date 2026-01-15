@@ -1,4 +1,4 @@
-FROM alpine:3.18
+FROM alpine:3.20
 
 # Installeer benodigde database clients
 RUN apk add --no-cache mariadb-client postgresql16-client redis
