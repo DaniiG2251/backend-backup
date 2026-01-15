@@ -5,6 +5,8 @@ Een lichte Docker container om automatische backups te maken van MariaDB, Postgr
 ## Features
 
 ✅ Geautomatiseerde backups van MariaDB, PostgreSQL en Redis  
+✅ Periodieke backups met instelbaar interval (standaard dagelijks)  
+✅ Container blijft actief voor continue backup operatie  
 ✅ Gzip compressie voor ruimtebesparing  
 ✅ Automatische cleanup van oude backups  
 ✅ Logging naar bestand voor monitoring  
@@ -38,12 +40,43 @@ Een lichte Docker container om automatische backups te maken van MariaDB, Postgr
 
 ## Gebruik
 
-### Manual backup
+### Automatische periodieke backups (aanbevolen)
+
+Start de container en deze zal automatisch backups uitvoeren op basis van het ingestelde interval:
+
+```bash
+docker-compose up -d
+```
+
+De container blijft actief en voert backups uit volgens `BACKUP_INTERVAL_MINUTES` (standaard elke 24 uur).
+
+Logs bekijken:
+```bash
+docker-compose logs -f backup
+```
+
+Container stoppen:
+```bash
+docker-compose down
+```
+
+### Manual backup (eenmalig)
+
+Voor een eenmalige backup zonder de container actief te houden:
 ```bash
 docker-compose run --rm backup
 ```
 
-### Automatische backups (cron job)
+**Let op:** Dit voert de container uit met het standaard interval gedrag. Voor een enkele backup, override het entrypoint:
+```bash
+docker-compose run --rm --entrypoint /backup.sh backup
+```
+
+### Automatische backups (cron job) - Legacy methode
+
+**Let op:** Met de nieuwe interval-based backup feature is cron niet meer nodig. De container doet dit nu zelf automatisch.
+
+Als je toch cron wilt gebruiken:
 
 Voeg dit toe aan je crontab (dagelijks om 02:00):
 ```bash
@@ -52,7 +85,7 @@ crontab -e
 
 Voeg deze regel toe:
 ```bash
-0 2 * * * cd /pad/naar/backend-backup && /usr/bin/docker-compose run --rm backup >> /var/log/backup.log 2>&1
+0 2 * * * cd /pad/naar/backend-backup && /usr/bin/docker-compose run --rm --entrypoint /backup.sh backup >> /var/log/backup.log 2>&1
 ```
 
 ## Configuratie
@@ -72,7 +105,17 @@ REDIS_HOST=redis            # Hostnaam van je Redis container
 
 BACKUP_DIR=/srv/backups     # Map waar backups worden opgeslagen
 RETENTION_DAYS=7            # Hoe lang backups bewaard worden (dagen)
+BACKUP_INTERVAL_MINUTES=1440 # Interval tussen backups in minuten (standaard 1440 = 24 uur)
 ```
+
+### Backup Interval configuratie
+
+De `BACKUP_INTERVAL_MINUTES` variabele bepaalt hoe vaak backups worden uitgevoerd:
+- **1440** (standaard): Dagelijks (24 uur)
+- **720**: Twee keer per dag (12 uur)
+- **360**: Vier keer per dag (6 uur)
+- **60**: Elk uur
+- **30**: Elke 30 minuten
 
 ## Backup bestanden
 
