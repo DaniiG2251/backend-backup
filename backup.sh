@@ -4,10 +4,17 @@ set -euo pipefail
 
 BACKUP_DIR=${BACKUP_DIR:-/backups}
 RETENTION_DAYS=${RETENTION_DAYS:-7}
+BACKUP_SUBDIRS="mariadb postgresql redis log"
+
 mkdir -p "$BACKUP_DIR"
 
+# Create dedicated subdirectories
+for subdir in $BACKUP_SUBDIRS; do
+    mkdir -p "$BACKUP_DIR/$subdir"
+done
+
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
-LOG_FILE="$BACKUP_DIR/backup_$TIMESTAMP.log"
+LOG_FILE="$BACKUP_DIR/log/backup_$TIMESTAMP.log"
 
 # Logging functie
 log() {
@@ -25,7 +32,7 @@ if [ -n "${MARIADB_HOST:-}" ]; then
         -p"$MARIADB_PASSWORD" \
         --all-databases \
         --single-transaction \
-        --quick | gzip > "$BACKUP_DIR/mariadb_backup_$TIMESTAMP.sql.gz"; then
+        --quick | gzip > "$BACKUP_DIR/mariadb/mariadb_backup_$TIMESTAMP.sql.gz"; then
         log "✓ MariaDB backup succesvol"
     else
         log "✗ MariaDB backup faalde"
@@ -39,7 +46,7 @@ if [ -n "${POSTGRES_HOST:-}" ]; then
     if PGPASSWORD="$POSTGRES_PASSWORD" pg_dumpall \
         -h "$POSTGRES_HOST" \
         -U "$POSTGRES_USER" \
-        | gzip > "$BACKUP_DIR/postgresql_backup_$TIMESTAMP.sql.gz"; then
+        | gzip > "$BACKUP_DIR/postgresql/postgresql_backup_$TIMESTAMP.sql.gz"; then
         log "✓ PostgreSQL backup succesvol"
     else
         log "✗ PostgreSQL backup faalde"
@@ -52,7 +59,7 @@ if [ -n "${REDIS_HOST:-}" ]; then
     log "Redis aan het backuppen..."
     if redis-cli -h "$REDIS_HOST" BGSAVE > /dev/null 2>&1; then
         sleep 2
-        if cp /data/dump.rdb "$BACKUP_DIR/redis_dump_$TIMESTAMP.rdb"; then
+        if cp /data/dump.rdb "$BACKUP_DIR/redis/redis_dump_$TIMESTAMP.rdb"; then
             log "✓ Redis backup succesvol"
         else
             log "✗ Redis dump.rdb copy faalde"
@@ -66,8 +73,15 @@ fi
 
 # Cleanup oude backups
 log "Oude backups aan het verwijderen (ouder dan $RETENTION_DAYS dagen)..."
-find "$BACKUP_DIR" -type f -mtime +"$RETENTION_DAYS" -delete
+for subdir in $BACKUP_SUBDIRS; do
+    find "$BACKUP_DIR/$subdir" -type f -mtime +"$RETENTION_DAYS" -delete 2>/dev/null || true
+done
 
 log "=== Backup compleet ==="
-log "Bestanden in backup map:"
-ls -lh "$BACKUP_DIR" | tail -n +2 >> "$LOG_FILE"
+log "Backup bestanden:"
+for subdir in $BACKUP_SUBDIRS; do
+    if [ -d "$BACKUP_DIR/$subdir" ] && [ "$(ls -A "$BACKUP_DIR/$subdir" 2>/dev/null)" ]; then
+        echo "  $subdir/:" >> "$LOG_FILE"
+        ls -lh "$BACKUP_DIR/$subdir" | tail -n +2 | sed 's/^/    /' >> "$LOG_FILE"
+    fi
+done
