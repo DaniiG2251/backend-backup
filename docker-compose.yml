@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  backup:
+    build: .
+    image: backend-backup:latest
+    container_name: backend-backup
+    environment:
+      - MARIADB_HOST=mariadb
+      - MARIADB_USER=root
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+      - POSTGRES_HOST=postgresql
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - REDIS_HOST=redis
+      - BACKUP_DIR=/backups
+      - RETENTION_DAYS=7
+    volumes:
+      - /srv/backups:/backups
+      - redis-data:/data
+    networks:
+      - backend
+    restart: "no"
+
+volumes:
+  redis-data:
+
+networks:
+  backend:
+    external: true
