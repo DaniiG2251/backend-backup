@@ -77,5 +77,10 @@ for subdir in mariadb postgresql redis log; do
 done
 
 log "=== Backup compleet ==="
-log "Bestanden in backup map:"
-ls -lh "$BACKUP_DIR" | tail -n +2 >> "$LOG_FILE"
+log "Backup bestanden:"
+for subdir in mariadb postgresql redis log; do
+    if [ -d "$BACKUP_DIR/$subdir" ] && [ "$(ls -A "$BACKUP_DIR/$subdir" 2>/dev/null)" ]; then
+        echo "  $subdir/:" >> "$LOG_FILE"
+        ls -lh "$BACKUP_DIR/$subdir" | tail -n +2 | sed 's/^/    /' >> "$LOG_FILE"
+    fi
+done
