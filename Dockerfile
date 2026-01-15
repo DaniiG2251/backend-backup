@@ -11,7 +11,7 @@ COPY backup.sh /app/
 COPY entrypoint.sh /app/
 
 # Converteer line endings naar UNIX format en maak scripts executable
-RUN dos2unix /app/backup.sh /app/entrypoint.sh && \
+RUN dos2unix -k /app/backup.sh /app/entrypoint.sh && \
     chmod +x /app/backup.sh /app/entrypoint.sh
 
 # Start het entrypoint script bij het runnen van de container
